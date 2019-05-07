@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CirqFundamentals", "CirqFundamentals\CirqFundamentals.pyproj", "{9C1713CF-BAFF-4674-BD63-DB02A99FD89F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5761D5D5-B6BF-4ACA-93A2-A18CB4D2284C}"
+	ProjectSection(SolutionItems) = preProject
+		vs_test_path_fixup.py = vs_test_path_fixup.py
+	EndProjectSection
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CirqOracles", "CirqOracles\CirqOracles.pyproj", "{6958F296-BDCE-4BB3-BFC9-F08879E58B62}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CirqNonOracles", "CirqNonOracles\CirqNonOracles.pyproj", "{918DF224-9554-4B84-9165-DC9472442FAC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9C1713CF-BAFF-4674-BD63-DB02A99FD89F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C1713CF-BAFF-4674-BD63-DB02A99FD89F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6958F296-BDCE-4BB3-BFC9-F08879E58B62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6958F296-BDCE-4BB3-BFC9-F08879E58B62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{918DF224-9554-4B84-9165-DC9472442FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{918DF224-9554-4B84-9165-DC9472442FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A5AC6A02-CEC1-49D1-9B09-950860293A37}
+	EndGlobalSection
+EndGlobal

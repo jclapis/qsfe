@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "QiskitFundamentals", "QiskitFundamentals\QiskitFundamentals.pyproj", "{5CDAFAF2-796A-415A-816B-593599F58FD5}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "QiskitErrorCorrection", "QiskitErrorCorrection\QiskitErrorCorrection.pyproj", "{2EC71B3C-2C40-4F70-9F4F-757A192FCAA6}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "QiskitOracles", "QiskitOracles\QiskitOracles.pyproj", "{7C52B942-C2BA-43C7-BB62-B7AA42F061FB}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "QiskitNonOracles", "QiskitNonOracles\QiskitNonOracles.pyproj", "{C0EACEA7-561E-459B-A990-E92BFD89F809}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3F017550-36F2-4B92-998B-34830E37A171}"
+	ProjectSection(SolutionItems) = preProject
+		vs_test_path_fixup.py = vs_test_path_fixup.py
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5CDAFAF2-796A-415A-816B-593599F58FD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CDAFAF2-796A-415A-816B-593599F58FD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EC71B3C-2C40-4F70-9F4F-757A192FCAA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EC71B3C-2C40-4F70-9F4F-757A192FCAA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C52B942-C2BA-43C7-BB62-B7AA42F061FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C52B942-C2BA-43C7-BB62-B7AA42F061FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0EACEA7-561E-459B-A990-E92BFD89F809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0EACEA7-561E-459B-A990-E92BFD89F809}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {67DBBAD1-E495-4D33-91E2-D3AB73E3876F}
+	EndGlobalSection
+EndGlobal
