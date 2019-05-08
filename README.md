@@ -1,6 +1,6 @@
 # Quantum Software Framework Evaluation
 
-This project contains the code written by MITRE during our evaluation of the most prominent quantum computing
+This project contains the code written by [MITRE](https://www.mitre.org/) during our evaluation of the most prominent quantum computing
 software frameworks in 2019. The evaluation is meant to gauge the software engineering experience in using each
 framework on a daily basis, to assess their strengths, weaknesses, and applicability to our work program.
 
