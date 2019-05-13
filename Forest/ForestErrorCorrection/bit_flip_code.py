@@ -17,7 +17,10 @@
 
 from ecc_test_implementation import run_tests
 import unittest
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from pyquil import Program, get_qc
+from pyquil.quil import address_qubits
+from pyquil.quilatom import QubitPlaceholder
+from pyquil.gates import *
 
 
 class BitFlipCode(unittest.TestCase):
@@ -34,103 +37,102 @@ class BitFlipCode(unittest.TestCase):
 	# ==============================
 
 
-    def encode_register(self, circuit, qubits):
+    def encode_register(self, qubits):
         """
         Creates an error-protected logical qubit, transforming A|000> + B|100> into
         A|000> + B|111> which will be used for the 3-qubit error correction code.
+        This returns a Program so that it can be inverted for decoding.
 
         Parameters:
-            circuit (QuantumCircuit): The circuit to add the preparation gates to
-            qubits (QuantumRegister): The register that will become the logical 
+            qubits (list[QubitPlaceholder]): The register that will become the logical 
                 error-protected qubit. The original qubit can be in any state, but it
                 must be the first element. All of the other qubits must be |0>.
-        """
-
-        circuit.cx(qubits[0], qubits[1])
-        circuit.cx(qubits[0], qubits[2])
-
-
-    def decode_register(self, circuit, qubits):
-        """
-        Converts an error-protected logical qubit back into a single qubit by turning 
-        the A|000> + B|111> state back into the A|000> + B|100> state.
-
-        Parameters:
-            circuit (QuantumCircuit): The circuit to add the unpreparation gates to
-            qubits (QuantumRegister): The logical error-encoded qubit
-        """
         
-        circuit.cx(qubits[0], qubits[2])
-        circuit.cx(qubits[0], qubits[1])
+        Returns:
+            A Program that encodes the qubit into a logical register.
+        """
+
+        program = Program(
+            CNOT(qubits[0], qubits[1]),
+            CNOT(qubits[0], qubits[2])
+        )
+
+        return program
 
 
-    def detect_error(self, circuit, qubits, parity_qubits, parity_measurement):
+    def detect_error(self, program, qubits):
         """
         Detects a bit-flip error on one of the three qubits in a logical qubit register.
 
         Parameters:
-            circuit (QuantumCircuit): The circuit to add the error detection to
-            qubits (QuantumRegister): The logical qubit register to check for errors
-            parity_qubits (QuantumRegister): The ancilla qubits to use when determining
-                which bit was flipped
-            parity_measurement (ClassicalRegister): The classical register used to
-                measure the parity qubits
+            program (Program): The program to add the error detection to
+            qubits (list[QubitPlaceholder]): The logical qubit register to check for errors
+
+        Returns:
+            A MemoryReference list representing the parity measurements. The first one
+            contains the parity of qubits 0 and 1, and the second contains the parity
+            of qubits 0 and 2.
         """
 
         # The plan here is to check if q0 and q1 have the same parity (00 or 11), and if q0 and q2
         # have the same parity. If both checks come out true, then there isn't an error. Otherwise,
         # if one of the checks reveals a parity discrepancy, we can use the other check to tell us
         # which qubit is broken.
+        
+        parity_qubits = QubitPlaceholder.register(2)
+        parity_measurement = program.declare("parity_measurement", "BIT", 2)
 
         # Check if q0 and q1 have the same value
-        circuit.cx(qubits[0], parity_qubits[0])
-        circuit.cx(qubits[1], parity_qubits[0])
+        program += CNOT(qubits[0], parity_qubits[0])
+        program += CNOT(qubits[1], parity_qubits[0])
         
         # Check if q0 and q2 have the same value
-        circuit.cx(qubits[0], parity_qubits[1])
-        circuit.cx(qubits[2], parity_qubits[1])
+        program += CNOT(qubits[0], parity_qubits[1])
+        program += CNOT(qubits[2], parity_qubits[1])
 
-        # Measure the parity values
-        circuit.measure(parity_qubits, parity_measurement)
+        # Measure the parity values and return the measurement register
+        program += MEASURE(parity_qubits[0], parity_measurement[0])
+        program += MEASURE(parity_qubits[1], parity_measurement[1])
+
+        return parity_measurement
 
 
-    def correct_errors(self, circuit, qubits, parity_qubits, parity_measurement):
+    def correct_errors(self, program, qubits):
         """
         Corrects any errors that have occurred within the logical qubit register.
 
         Parameters:
-            circuit (QuantumCircuit): The circuit to add the error correction to
-            qubits (QuantumRegister): The logical qubit register to check and correct
-            parity_qubits (QuantumRegister): The ancilla qubits to use when determining
-                which bit has an error
-            parity_measurement (ClassicalRegister): The classical register used to
-                measure the parity qubits
+            program (Program): The program to add the error correction to
+            qubits (list[QubitPlaceholder]): The logical qubit register to check and correct
         """
 
         # Determine which qubit (if any) is broken.
-        self.detect_error(circuit, qubits, parity_qubits, parity_measurement)
+        parity_measurements = self.detect_error(program, qubits)
 
-        # In Qiskit, we can't modify a quantum circuit in the middle of
-        # an operation based on a classical register with a normal if statement;
-        # we have to append c_if to gates to do it. That has the unfortunate
-        # side-effect of meaning we can't do if-blocks, and we can't directly
-        # control a gate on more than one variable, so we have to think about things
-        # a little differently.
-        # 
-        # The returned circuit will have the first bit == 1 if 0 and 1 are different,
-        # and the second bit == 1 if 0 and 2 are different. To get c_if to work, we have
-        # to treat these two as two bits of an integer. Note that the bit order of the
-        # measurement will be reversed because Qiskit will read the register as little-endian.
+        # The parity measurements will be as follows:
         # 
         # 00 = none are different
-        # 01 (measured as 10) = 0 and 2 are different but 0 and 1 are the same, so 2 is broken
-        # 10 (measured as 01) = 0 and 1 are different but 0 and 2 are the same, so 1 is broken
+        # 01 = 0 and 2 are different but 0 and 1 are the same, so 2 is broken
+        # 10 = 0 and 1 are different but 0 and 2 are the same, so 1 is broken
         # 11 = 0 and 1 are different, and 0 and 2 are different, so 0 is broken
-        #
-        # These lines will fix the broken qubit based on this measurement.
-        circuit.x(qubits[1]).c_if(parity_measurement, 0b01)
-        circuit.x(qubits[2]).c_if(parity_measurement, 0b10)
-        circuit.x(qubits[0]).c_if(parity_measurement, 0b11)
+        # 
+        # In pyQuil, we can create multiple quantum programs that can act as individual
+        # branch bodies of a classical if/else statement, so we can switch based on the
+        # parity measurement results. These lines will fix the broken qubit based on this
+        # measurement.
+
+        # if parity[0] == 1
+        if_parity_0 = Program()
+        #   if parity[1] == 1, then flip q0, otherwise flip q1.
+        if_parity_0.if_then(parity_measurements[1], X(qubits[0]), X(qubits[1]))
+
+        # if parity[0] == 0
+        if_not_parity_0 = Program()
+        #   if parity[1] == 1, then flip q2, else do nothing.
+        if_not_parity_0.if_then(parity_measurements[1], X(qubits[2]), Program())
+
+        # Append the branches to the original program
+        program.if_then(parity_measurements[0], if_parity_0, if_not_parity_0)
 
     
     # ====================
