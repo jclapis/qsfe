@@ -93,7 +93,7 @@ class TeleportationTests(unittest.TestCase):
             A circuit that entangles and measures the qubits.
         """
 
-        circuit = QuantumCircuit(original_qubit, transfer_qubit, original_measurement, transfer_measurement);
+        circuit = QuantumCircuit(original_qubit, transfer_qubit, original_measurement, transfer_measurement)
 
         # Entangle the original qubit with the transfer qubit
         circuit.cx(original_qubit, transfer_qubit)

@@ -15,18 +15,20 @@
 # ========================================================================
 
 
-import vs_test_path_fixup
 import unittest
-import cirq
+from pyquil import Program, get_qc
+from pyquil.quil import address_qubits
+from pyquil.quilatom import QubitPlaceholder
+from pyquil.gates import *
 
 
 class SuperdenseCodingTests(unittest.TestCase):
     """
     This class contains a simple implementation of the superdense coding protocol.
     
-    Note that unlike the other fundamental algorithms, this class uses a "circuit"
-    instance variable to represent the quantum circuit that holds the superdense coding
-    protocol. This is another example of Cirq's flexibility with respect to circuits
+    Note that unlike the other fundamental algorithms, this class uses a "program"
+    instance variable to represent the quantum program that holds the superdense coding
+    protocol. This is another example of pyQuil's flexibility with respect to programs
     and registers.
     """
 
@@ -36,7 +38,7 @@ class SuperdenseCodingTests(unittest.TestCase):
         Iniitalizes the unit test class.
         """
 
-        self.circuit = cirq.Circuit()
+        self.program = Program()
     
 
     # ==============================
@@ -50,7 +52,7 @@ class SuperdenseCodingTests(unittest.TestCase):
 
         Parameters:
             buffer (list[bool]): The two bits to encode into the qubit.
-            pair_a (Qid): The qubit to encode the information into. This
+            pair_a (QubitPlaceholder): The qubit to encode the information into. This
                 qubit must have already been entangled with another one.
         """
 
@@ -67,9 +69,9 @@ class SuperdenseCodingTests(unittest.TestCase):
 		# 11 = |01> - |10> (XZ, parity and phase are flipped)
 
         if(buffer[1]):
-            self.circuit.append(cirq.X(pair_a)) # X if the low bit is 1
+            self.program += X(pair_a) # X if the low bit is 1
         if(buffer[0]):
-            self.circuit.append(cirq.Z(pair_a)) # Z if the high bit is 1
+            self.program += Z(pair_a) # Z if the high bit is 1
 
 
     def decode_message(self, pair_a, pair_b):
@@ -77,23 +79,18 @@ class SuperdenseCodingTests(unittest.TestCase):
         Decodes two bits of information from an entangled pair of qubits.
 
         Parameters:
-            pair_a (Qid): The "remote" qubit that was modified by the encoding
+            pair_a (QubitPlaceholder): The "remote" qubit that was modified by the encoding
                 process.
-            pair_b (Qid): The "local" qubit that we received, which wasn't
+            pair_b (QubitPlaceholder): The "local" qubit that we received, which wasn't
                 directly modified.
 
         Returns:
-            a_measurement_key (str): The key of the measurement of the "remote" qubit.
-            b_measurement_key (str): The key of the measurement of the "local" qubit.
+            a_measurement_index (int): The index of the measurement of the "remote" qubit.
+            b_measurement_index (int): The index of the measurement of the "local" qubit.
         """
 
-        a_measurement_key = "a_measurement"
-        b_measurement_key = "b_measurement"
-
-        self.circuit.append([
-            cirq.CNOT(pair_a, pair_b),
-            cirq.H(pair_a)
-        ])
+        self.program += CNOT(pair_a, pair_b)
+        self.program += H(pair_a)
 
 		# Here's the decoding table based on the states after running
 		# them through CNOT(A, B) and H(A):
@@ -105,12 +102,12 @@ class SuperdenseCodingTests(unittest.TestCase):
 		# table, so measuring these qubits gives us the original bits where 
 		# pair_b corresponds to whether or not X was used, and pair_a corresponds
 		# to Z.
-        self.circuit.append([
-            cirq.measure(pair_a, key=a_measurement_key),
-            cirq.measure(pair_b, key=b_measurement_key),
-        ])
+        measurement = self.program.declare("ro", "BIT", 2)
 
-        return (a_measurement_key, b_measurement_key)
+        self.program += MEASURE(pair_a, measurement[0])
+        self.program += MEASURE(pair_b, measurement[1])
+
+        return (0, 1)
 
     
     # ====================
@@ -124,46 +121,45 @@ class SuperdenseCodingTests(unittest.TestCase):
 
         Parameters:
             description (str): A description of the test, for logging.
-            iterations (int): The number of times to run the circuit.
+            iterations (int): The number of times to run the program.
             buffer (list[Bool]): The buffer containing the two bits to send.
         """
         
-        # Construct the registers and circuit.
+        # Construct the registers
         print(f"Running test: {description}")
-        pair_a = cirq.NamedQubit(name="pair_a")
-        pair_b = cirq.NamedQubit(name="pair_b")
+        pair_a = QubitPlaceholder()
+        pair_b = QubitPlaceholder()
 
         # Entangle the qubits together
-        self.circuit.append([
-            cirq.H(pair_a),
-            cirq.CNOT(pair_a, pair_b)
-        ])
+        self.program += H(pair_a)
+        self.program += CNOT(pair_a, pair_b)
 
         # Encode the buffer into the qubits, then decode them into classical measurements
         self.encode_message(buffer, pair_a)
-        (a_measurement_key, b_measurement_key) = self.decode_message(pair_a, pair_b)
+        (a_measurement_index, b_measurement_index) = self.decode_message(pair_a, pair_b)
 
-        # Run the circuit N times.
-        simulator = cirq.Simulator()
-        result = simulator.run(self.circuit, repetitions=iterations)
+        # Run the program N times.
+        assigned_program = address_qubits(self.program)
+        assigned_program.wrap_in_numshots_loop(iterations)
+        computer = get_qc(f"2q-qvm", as_qvm=True)
+        executable = computer.compile(assigned_program)
+        results = computer.run(executable)
 
         # Check the first qubit to make sure it was always the expected value
         desired_a_state = int(buffer[0])
-        a_result = result.histogram(key=a_measurement_key)
-        correct_a_counts = a_result[desired_a_state]
-        if correct_a_counts != iterations:
-            self.fail(f"Test {description} failed. The first bit should have been {desired_a_state} all " +
-                        f"{iterations} times but it was only in this state {correct_a_counts} times.")
+        for result in results:
+            if result[a_measurement_index] != desired_a_state:
+                self.fail(f"Test {description} failed. The first bit should have been {desired_a_state} " +
+                            f"but it was {result[a_measurement_index]}.")
         else:
             print(f"The first qubit was {desired_a_state} all {iterations} times.")
             
         # Check the second qubit to make sure it was always the expected value
         desired_b_state = int(buffer[1])
-        b_result = result.histogram(key=b_measurement_key)
-        correct_b_counts = b_result[desired_b_state]
-        if correct_b_counts != iterations:
-            self.fail(f"Test {description} failed. The second bit should have been {desired_b_state} all " +
-                        f"{iterations} times but it was only in this state {correct_b_counts} times.")
+        for result in results:
+            if result[b_measurement_index] != desired_b_state:
+                self.fail(f"Test {description} failed. The first bit should have been {desired_b_state} " +
+                            f"but it was {result[b_measurement_index]}.")
         else:
             print(f"The second qubit was {desired_b_state} all {iterations} times.")
 

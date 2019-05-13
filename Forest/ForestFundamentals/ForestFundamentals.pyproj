@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>350b1599-d696-4c2d-aef4-4fa6f131930e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>ForestFundamentals.py</StartupFile>
+    <StartupFile>superposition.py</StartupFile>
     <SearchPath>..\..\Forest</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -21,7 +21,19 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ForestFundamentals.py" />
+    <Compile Include="entanglement.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="multicontrol_address_issue.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="superdense_coding.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="superposition.py" />
+    <Compile Include="teleportation.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|ForestEnv" />
