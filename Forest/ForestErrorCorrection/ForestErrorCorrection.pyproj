@@ -26,6 +26,9 @@
     <Compile Include="ecc_test_implementation.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="shor_code.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|ForestEnv" />
