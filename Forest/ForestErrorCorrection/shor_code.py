@@ -17,8 +17,7 @@
 
 from ecc_test_implementation import run_tests
 import unittest
-from pyquil import Program, get_qc
-from pyquil.quil import address_qubits
+from pyquil import Program
 from pyquil.quilatom import QubitPlaceholder
 from pyquil.gates import *
 
