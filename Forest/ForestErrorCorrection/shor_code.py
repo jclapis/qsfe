@@ -21,7 +21,6 @@ from pyquil import Program, get_qc
 from pyquil.quil import address_qubits
 from pyquil.quilatom import QubitPlaceholder
 from pyquil.gates import *
-from pyquil.quilbase import ResetQubit
 
 
 class ShorCode(unittest.TestCase):
@@ -136,6 +135,15 @@ class ShorCode(unittest.TestCase):
 
     def generate_classical_control_corrector(self, program, qubits, parity_measurement, gate):
         """
+        Adds the error correction branches to the program, based on the parity measurements.
+
+        Parameters:
+            program (Program): The program being constructed
+            qubits (list[QubitPlaceholder]): The logical error-encoded qubit
+            parity_measurement (MemoryReference): The classical register used to
+                measure the parity qubits. This should already have the measurement
+                results stored in it.
+            gate (function): The gate to apply to the broken qubit in order to fix it
         """
 
         # if parity[0] == 1

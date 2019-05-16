@@ -17,7 +17,10 @@
 
 from ecc_test_implementation import run_tests
 import unittest
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from pyquil import Program, get_qc
+from pyquil.quil import address_qubits
+from pyquil.quilatom import QubitPlaceholder
+from pyquil.gates import *
 
 
 class SteaneCode(unittest.TestCase):
@@ -35,14 +38,13 @@ class SteaneCode(unittest.TestCase):
 	# ==============================
 
 
-    def encode_register(self, circuit, qubits):
+    def encode_register(self, qubits):
         """
         Creates an error-protected qubit, wrapping the original with 6 spares that
 	    protect against bit and/or phase flips.
 
         Parameters:
-            circuit (QuantumCircuit): The circuit to add the preparation gates to
-            qubits (QuantumRegister): The register that will become the logical 
+            qubits (list[QubitPlaceholder]): The register that will become the logical 
                 error-protected qubit. The original qubit can be in any state, but it
                 must be the first element. All of the other qubits must be |0>.
 
@@ -56,50 +58,32 @@ class SteaneCode(unittest.TestCase):
         # really recommend you read the papers on this code to understand why it works,
         # because it's a very cool idea - it's essentially a quantum version of a classical
         # Hamming code used in normal signal processing.
+        program = Program()
+
         for i in [4, 5, 6]:
-            circuit.h(qubits[i])
+            program += H(qubits[i])
         for i in [1, 2]:
-            circuit.cx(qubits[0], qubits[i])
+            program += CNOT(qubits[0], qubits[i])
         for i in [0, 1, 3]:
-            circuit.cx(qubits[6], qubits[i])
+            program += CNOT(qubits[6], qubits[i])
         for i in [0, 2, 3]:
-            circuit.cx(qubits[5], qubits[i])
+            program += CNOT(qubits[5], qubits[i])
         for i in [1, 2, 3]:
-            circuit.cx(qubits[4], qubits[i])
+            program += CNOT(qubits[4], qubits[i])
+
+        return program
 
 
-    def decode_register(self, circuit, qubits):
-        """
-        Converts an error-protected logical qubit back into a single qubit by reversing
-        the encoding operation.
-
-        Parameters:
-            circuit (QuantumCircuit): The circuit to add the unpreparation gates to
-            qubits (QuantumRegister): The logical error-encoded qubit
-        """
-        
-        for i in [3, 2, 1]:
-            circuit.cx(qubits[4], qubits[i])
-        for i in [3, 2, 0]:
-            circuit.cx(qubits[5], qubits[i])
-        for i in [3, 1, 0]:
-            circuit.cx(qubits[6], qubits[i])
-        for i in [2, 1]:
-            circuit.cx(qubits[0], qubits[i])
-        for i in [6, 5, 4]:
-            circuit.h(qubits[i])
-
-
-    def detect_bit_flip_error(self, circuit, qubits, parity_qubits, parity_measurement):
+    def detect_bit_flip_error(self, program, qubits, parity_qubits, parity_measurement):
         """
         Detects which physical qubit (if any) in the logical qubit was flipped.
 
         Parameters:
-            circuit (QuantumCircuit): The circuit to add the detection gates to
-            qubits (QuantumRegister): The logical error-encoded qubit
-            parity_qubits (QuantumRegister): The ancilla qubits to use when determining
+            program (Program): The program to add the error detection to
+            qubits (list[QubitPlaceholder]): The logical error-encoded qubit
+            parity_qubits (list[QubitPlaceholder]): The ancilla qubits to use when determining
                 which qubit was flipped
-            parity_measurement (ClassicalRegister): The classical register used to
+            parity_measurement (MemoryReference): The classical register used to
                 measure the parity qubits
         """
 
@@ -113,25 +97,26 @@ class SteaneCode(unittest.TestCase):
 		# which qubit is broken, and flip it accordingly.
 
         for i in [0, 2, 4, 6]:  # Block 0: 0, 2, 4, 6
-            circuit.cx(qubits[i], parity_qubits[0])
+            program += CNOT(qubits[i], parity_qubits[2])
         for i in [1, 2, 5, 6]:  # Block 1: 1, 2, 5, 6
-            circuit.cx(qubits[i], parity_qubits[1])
+            program += CNOT(qubits[i], parity_qubits[1])
         for i in [3, 4, 5, 6]:  # Block 2: 3, 4, 5, 6
-            circuit.cx(qubits[i], parity_qubits[2])
+            program += CNOT(qubits[i], parity_qubits[0])
 
-        circuit.measure(parity_qubits, parity_measurement)
+        for i in range(0, 3):
+            program += MEASURE(parity_qubits[i], parity_measurement[i])
 
 
-    def detect_phase_flip_error(self, circuit, qubits, parity_qubits, parity_measurement):
+    def detect_phase_flip_error(self, program, qubits, parity_qubits, parity_measurement):
         """
         Detects which physical qubit (if any) had its phase flipped.
 
         Parameters:
-            circuit (QuantumCircuit): The circuit to add the detection gates to
-            qubits (QuantumRegister): The logical error-encoded qubit
-            parity_qubits (QuantumRegister): The ancilla qubits to use when determining
+            program (Program): The program to add the detection gates to
+            qubits (list[QubitPlaceholder]): The logical error-encoded qubit
+            parity_qubits (list[QubitPlaceholder]): The ancilla qubits to use when determining
                 which qubit had its phase flipped
-            parity_measurement (ClassicalRegister): The classical register used to
+            parity_measurement (MemoryReference): The classical register used to
                 measure the parity qubits
         """
         
@@ -150,31 +135,34 @@ class SteaneCode(unittest.TestCase):
 		# Entanglement is black magic. Fun fact: this property is why phase queries work, and
 		# how superdense coding actually does something useful.
 
-        circuit.h(parity_qubits)
+        for qubit in parity_qubits:
+            program += H(qubit)
         for i in [0, 2, 4, 6]:  # Block 0: 0, 2, 4, 6
-            circuit.cx(parity_qubits[0], qubits[i])
+            program += CNOT(parity_qubits[2], qubits[i])
         for i in [1, 2, 5, 6]:  # Block 1: 1, 2, 5, 6
-            circuit.cx(parity_qubits[1], qubits[i])
+            program += CNOT(parity_qubits[1], qubits[i])
         for i in [3, 4, 5, 6]:  # Block 2: 3, 4, 5, 6
-            circuit.cx(parity_qubits[2], qubits[i])
-        circuit.h(parity_qubits)
+            program += CNOT(parity_qubits[0], qubits[i])
+        for qubit in parity_qubits:
+            program += H(qubit)
+        
+        for i in range(0, 3):
+            program += MEASURE(parity_qubits[i], parity_measurement[i])
 
-        circuit.measure(parity_qubits, parity_measurement)
 
-
-    def correct_errors(self, circuit, qubits, parity_qubits, parity_measurement):
+    def generate_classical_control_corrector(self, program, qubits, parity_measurement, gate):
         """
-        Corrects any errors that have occurred within the logical qubit register.
+        Adds the error correction branches to the program, based on the parity measurements.
 
         Parameters:
-            circuit (QuantumCircuit): The circuit to add the error correction to
-            qubits (QuantumRegister): The logical qubit register to check and correct
-            parity_qubits (QuantumRegister): The ancilla qubits to use when determining
-                which qubit has an error
-            parity_measurement (ClassicalRegister): The classical register used to
-                measure the parity qubits
+            program (Program): The program being constructed
+            qubits (list[QubitPlaceholder]): The logical error-encoded qubit
+            parity_measurement (MemoryReference): The classical register used to
+                measure the parity qubits. This should already have the measurement
+                results stored in it.
+            gate (function): The gate to apply to the broken qubit in order to fix it
         """
-
+        
         # The 3 parity qubits used during the bit error and phase error detections will
         # end up encoding a 3-bit number that directly maps to the broken qubit in each
         # operation.
@@ -191,18 +179,58 @@ class SteaneCode(unittest.TestCase):
 		# 110 = Error on qubit 5
 		# 111 = Error on qubit 6
 		# -----------------------
-        # In Qiskit, we can write this with 8 c_if statements per operation.
+        # In pyQuil, we can do this by switching on each of the 3 measurements, so we have
+        # to build branches to handle each switch.
+
+        # If the first two measurements were 00
+        branch_00x = Program()
+        branch_00x.if_then(parity_measurement[2], gate(qubits[0]), Program())
+
+        # If the first two were 01
+        branch_01x = Program()
+        branch_01x.if_then(parity_measurement[2], gate(qubits[2]), gate(qubits[1]))
+        
+        # If the first two were 10
+        branch_10x = Program()
+        branch_10x.if_then(parity_measurement[2], gate(qubits[4]), gate(qubits[3]))
+        
+        # If the first two were 11
+        branch_11x = Program()
+        branch_11x.if_then(parity_measurement[2], gate(qubits[6]), gate(qubits[5]))
+        
+        # If the first measurement was 0
+        branch_0xx = Program()
+        branch_0xx.if_then(parity_measurement[1], branch_01x, branch_00x)
+        
+        # If the first measurement was 1
+        branch_1xx = Program()
+        branch_1xx.if_then(parity_measurement[1], branch_11x, branch_10x)
+
+        # Main branch (on the first measurement)
+        program.if_then(parity_measurement[0], branch_1xx, branch_0xx)
+
+
+    def correct_errors(self, program, qubits):
+        """
+        Corrects any errors that have occurred within the logical qubit register.
+
+        Parameters:
+            program (Program): The program to add the error correction to
+            qubits (list[QubitPlaceholder]): The logical qubit register to check and correct
+        """
+        
+        parity_qubits = QubitPlaceholder.register(3)
+        parity_measurement = program.declare("parity_measurement", "BIT", 3)
 
         # Correct bit flips
-        self.detect_bit_flip_error(circuit, qubits, parity_qubits, parity_measurement)
-        for i in range(0, len(qubits)):
-            circuit.x(qubits[i]).c_if(parity_measurement, i + 1)
-        circuit.reset(parity_qubits)
+        self.detect_bit_flip_error(program, qubits, parity_qubits, parity_measurement)
+        self.generate_classical_control_corrector(program, qubits, parity_measurement, X)
+        for qubit in parity_qubits:
+            program += RESET(qubit)
 
         # Correct phase flips
-        self.detect_phase_flip_error(circuit, qubits, parity_qubits, parity_measurement)
-        for i in range(0, len(qubits)):
-            circuit.z(qubits[i]).c_if(parity_measurement, i + 1)
+        self.detect_phase_flip_error(program, qubits, parity_qubits, parity_measurement)
+        self.generate_classical_control_corrector(program, qubits, parity_measurement, Z)
 
             
     # ====================

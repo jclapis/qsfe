@@ -222,9 +222,8 @@ namespace QSharpErrorCorrection.Steane
 		// 011 = Error on qubit 2
 		// 100 = Error on qubit 3
 		// 101 = Error on qubit 4
-		// 011 = Error on qubit 5
-		// 110 = Error on qubit 6
-		// 111 = Error on qubit 7
+		// 110 = Error on qubit 5
+		// 111 = Error on qubit 6
 		// -----------------------
 		// Rather than do a bunch of if/elses, let's just do some bit shifting to get the proper index.
 		mutable brokenIndex = 0;
