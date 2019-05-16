@@ -5,7 +5,8 @@
     <ProjectGuid>350b1599-d696-4c2d-aef4-4fa6f131930e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>superposition.py</StartupFile>
-    <SearchPath>..\..\Forest</SearchPath>
+    <SearchPath>
+    </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ForestFundamentals</Name>

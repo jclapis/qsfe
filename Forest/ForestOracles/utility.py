@@ -40,19 +40,19 @@ def run_flip_marker_as_phase_marker(program, ancilla_cache, oracle, qubits, orac
 
     # Add the phase-flip ancilla qubit to the program if it doesn't already
     # exist, and set it up in the |-> state
-    phase_flip_target = None
+    phase_marker_target = None
     if not "phase_marker_target" in ancilla_cache:
-        phase_flip_target = QubitPlaceholder()
-        ancilla_cache["phase_flip_target"] = phase_flip_target
-        program += X(phase_flip_target)
-        program += H(phase_flip_target)
+        phase_marker_target = QubitPlaceholder()
+        ancilla_cache["phase_marker_target"] = phase_marker_target
+        program += X(phase_marker_target)
+        program += H(phase_marker_target)
     else:
-        phase_flip_target = ancilla_cache["phase_flip_target"]
+        phase_marker_target = ancilla_cache["phase_marker_target"]
 
     # Run the oracle with the phase-flip ancilla as the target - when the
     # oracle flips this target, it will actually flip the phase of the input
     # instead of entangling it with the target.
     if oracle_args is None:
-        oracle(program, qubits, phase_flip_target)
+        oracle(program, qubits, phase_marker_target)
     else:
-        oracle(program, qubits, phase_flip_target, oracle_args)
+        oracle(program, qubits, phase_marker_target, oracle_args)
