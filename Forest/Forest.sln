@@ -16,6 +16,8 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "ForestErrorCorrection", "Fo
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "ForestOracles", "ForestOracles\ForestOracles.pyproj", "{7CF408EC-3BBD-4561-AE0A-3FDB4EB032F0}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "ForestNonOracles", "ForestNonOracles\ForestNonOracles.pyproj", "{E92AC715-EA44-4D14-A222-55F2D64A573D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,8 @@ Global
 		{356ABFAB-1B52-4BF5-A98B-BCD34AEC2ECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CF408EC-3BBD-4561-AE0A-3FDB4EB032F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7CF408EC-3BBD-4561-AE0A-3FDB4EB032F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E92AC715-EA44-4D14-A222-55F2D64A573D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E92AC715-EA44-4D14-A222-55F2D64A573D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -97,8 +97,8 @@ def simon_quantum_step(function, input_size):
 
     Parameters:
         function (function): The black-box function to run the algorithm on (the function being
-	        evaluated). It should take a Program as its first input, an input list[Qid]
-            as its second argument, and an output list[Qid] as its third argument.
+	        evaluated). It should take a Program as its first input, an input list[QubitPlaceholder]
+            as its second argument, and an output list[QubitPlaceholder] as its third argument.
 
         input_size (int): The number of bits that the function expects in its input and output
 	        registers.
@@ -164,8 +164,8 @@ def run_function_in_classical_mode(function, input):
 
     Parameters:
         function (function): The black-box function to run the algorithm on (the function being
-	        evaluated). It should take a Program as its first input, an input list[Qid]
-            as its second argument, and an output list[Qid] as its third argument.
+	        evaluated). It should take a Program as its first input, an input list[QubitPlaceholder]
+            as its second argument, and an output list[QubitPlaceholder] as its third argument.
 
         input (list[bool]): The bit string you want to provide as input to the function
 
@@ -217,9 +217,9 @@ def wiki_test_function(program, input, output):
 
     Parameters:
         program (Program): The program being constructed
-        input (list[Qid]): The register that contains the input.
+        input (list[QubitPlaceholder]): The register that contains the input.
             This can be in any arbitrary state.
-        output (list[Qid]): The register that will hold the function output.
+        output (list[QubitPlaceholder]): The register that will hold the function output.
             This must be in the state |0...0>.
     """
 
@@ -245,9 +245,9 @@ def identity(program, input, output):
 
     Parameters:
         program (Program): The program being constructed
-        input (list[Qid]): The register that contains the input.
+        input (list[QubitPlaceholder]): The register that contains the input.
             This can be in any arbitrary state.
-        output (list[Qid]): The register that will hold the function output.
+        output (list[QubitPlaceholder]): The register that will hold the function output.
             This must be in the state |0...0>.
     """
     
@@ -261,9 +261,9 @@ def left_shift_by_1(program, input, output):
 
     Parameters:
         program (Program): The program being constructed
-        input (list[Qid]): The register that contains the input.
+        input (list[QubitPlaceholder]): The register that contains the input.
             This can be in any arbitrary state.
-        output (list[Qid]): The register that will hold the function output.
+        output (list[QubitPlaceholder]): The register that will hold the function output.
             This must be in the state |0...0>.
     """
 
@@ -276,9 +276,9 @@ def right_shift_by_1(program, input, output):
 
     Parameters:
         program (Program): The program being constructed
-        input (list[Qid]): The register that contains the input.
+        input (list[QubitPlaceholder]): The register that contains the input.
             This can be in any arbitrary state.
-        output (list[Qid]): The register that will hold the function output.
+        output (list[QubitPlaceholder]): The register that will hold the function output.
             This must be in the state |0...0>.
     """
 
