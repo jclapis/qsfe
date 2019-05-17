@@ -5,7 +5,7 @@
     <ProjectGuid>7cf408ec-3bbd-4561-ae0a-3fdb4eb032f0</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>oracles.py</StartupFile>
-    <SearchPath>Grover</SearchPath>
+    <SearchPath>Grover;Simon</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ForestOracles</Name>
@@ -34,6 +34,15 @@
     <Compile Include="q_math.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Simon\matrix_math.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Simon\simon.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Simon\simon_tests.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="utility.py">
       <SubType>Code</SubType>
     </Compile>
@@ -43,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Grover\" />
+    <Folder Include="Simon\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
