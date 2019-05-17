@@ -22,7 +22,7 @@ from pyquil.quil import address_qubits
 from pyquil.quilatom import QubitPlaceholder
 from pyquil.gates import *
 import qft
-#import shor_math
+import shor_math
 
 
 class QftTests(unittest.TestCase):
@@ -124,7 +124,7 @@ class QftTests(unittest.TestCase):
 
         Parameters:
             program (Program): The program being constructed
-            qubits (list[Qid]): The register that will hold the sine wave samples
+            qubits (list[QubitPlaceholder]): The register that will hold the sine wave samples
                 in its superposition amplitudes
         """
 
@@ -233,7 +233,7 @@ class QftTests(unittest.TestCase):
 
         Parameters:
             program (Program): The program being constructed
-            qubits (list[Qid]): The register that will hold the cosine wave samples
+            qubits (list[QubitPlaceholder]): The register that will hold the cosine wave samples
                 in its superposition amplitudes
         """
 
@@ -326,7 +326,7 @@ class QftTests(unittest.TestCase):
 
         Parameters:
             program (Program): The program being constructed
-            qubits (list[Qid]): The register that will hold the sine wave samples
+            qubits (list[QubitPlaceholder]): The register that will hold the sine wave samples
                 in its superposition amplitudes
         """
 
@@ -372,7 +372,7 @@ class QftTests(unittest.TestCase):
 
         Parameters:
             program (Program): The program being constructed
-            qubits (list[Qid]): The register that will hold the cosine wave samples
+            qubits (list[QubitPlaceholder]): The register that will hold the cosine wave samples
                 in its superposition amplitudes
         """
 
@@ -461,45 +461,49 @@ class QftTests(unittest.TestCase):
         number_to_factor = 21
         guess = 11
 
-        input = cirq.NamedQubit.range(input_length, prefix="input")
-        output = cirq.NamedQubit.range(output_length, prefix="output")
-        program = cirq.Program()
+        input = QubitPlaceholder.register(input_length)
+        output = QubitPlaceholder.register(output_length)
+        program = Program()
 
-        program.append([
-            cirq.H.on_each(*input),                      # Input = |+...+>
-            cirq.X((output[output_length-1]))   # Output = |0...01>
-        ])
+        for qubit in input:                     # Input = |+...+>
+            program += H(qubit)
+        program += X(output[output_length-1])   # Output = |0...01>
 
         # Do the arithmetic so the input register is entangled with the output register; after
 		# this, if the state X is measured on the input register, the output register will always
 		# be measured as 11^X mod 21.
+        ancilla_cache = {}
         for i in range(0, input_length):
             power_of_two = input_length - 1 - i
             power_of_guess = 2 ** power_of_two
             constant = pow(guess, power_of_guess, number_to_factor)
-            shor_math.controlled_modular_multiply(program, input[i], constant, 
+            shor_math.controlled_modular_multiply(ancilla_cache, program, input[i], constant, 
                                                   number_to_factor, output)
 
         # Run inverse QFT (the analog of the normal DFT) to find the period
-        qft.iqft(program, input)
-        program.append(cirq.measure(*input, key="result"))
+        program += qft.qft(input).dagger()
+        measurement = program.declare("ro", "BIT", input_length)
+        for i in range(0, input_length):
+            program += MEASURE(input[i], measurement[i])
 
         # Run the program
-        simulator = cirq.Simulator()
-        result = simulator.run(program, repetitions=1)
-        result_states = result.histogram(key="result")
-        measurement = 0
-        for(state, count) in result_states.items():
-            measurement = state
-            break
+        assigned_program = address_qubits(program)
+        computer = get_qc(f"{len(assigned_program.get_qubits())}q-qvm", as_qvm=True)
+        computer.compiler.client.rpc_timeout = None
+        executable = computer.compile(assigned_program)
+        results = computer.run(executable)
+        result_string = ""
+        for bit in results[0]:
+            result_string += str(bit)
+        result = int(result_string, 2)
 
         # Measure the resulting period and make sure it's close to a multiple of 1/6,
         # with a tolerance of 0.01.
-        scaled_measurement = measurement / 512 * 6
+        scaled_measurement = result / 512 * 6
         nearest_multiple = round(scaled_measurement)
         delta = abs(scaled_measurement - nearest_multiple)
 
-        print(f"Measured {measurement}/512 => {scaled_measurement}, delta = {delta}")
+        print(f"Measured {result}/512 => {scaled_measurement}, delta = {delta}")
         if delta >= 0.01:
             self.fail(f"QFT failed, delta of {delta} is too high.")
             

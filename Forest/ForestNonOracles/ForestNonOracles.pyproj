@@ -26,6 +26,7 @@
     <Compile Include="qft_tests.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="shor_math.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|ForestEnv" />
