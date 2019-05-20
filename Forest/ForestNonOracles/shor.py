@@ -24,7 +24,10 @@
 # classical part.
 
 
-import cirq
+from pyquil import Program, get_qc
+from pyquil.quil import address_qubits
+from pyquil.quilatom import QubitPlaceholder
+from pyquil.gates import *
 import qft
 import shor_math
 import math
@@ -119,7 +122,7 @@ def find_continued_fraction_convergent(numerator, denominator, denominator_thres
             convergent_denominator_1_before = convergent_denominator
 
 
-def modular_exponentiation(circuit, input, output, a, b):
+def modular_exponentiation(ancilla_cache, program, input, output, a, b):
     """
     Calculates the modular exponentiation value |O> = A^|X> mod B. The input register
 	should contain the exponent and the output register will contain the result of
@@ -127,17 +130,20 @@ def modular_exponentiation(circuit, input, output, a, b):
 	whatever state |X> is measured to be, |O> will always be the solution to the function.
 
     Parameters:
-        circuit (Circuit): The circuit being constructed
-        input (list[Qid]): The register representing X, the exponent of the power term.
+        ancilla_cache (dict[string, QubitPlaceholder]): A collection of ancilla qubits
+            that have been allocated in the program for use, paired with a name to help
+            determine when they're free for use.
+        program (Program): The program being constructed
+        input (list[QubitPlaceholder]): The register representing X, the exponent of the power term.
             This can be in any superposition you want, so you can calculate the value for
             multiple inputs simultaneously.
-        output (list[Qid]): The register representing O, which will contain the
+        output (list[QubitPlaceholder]): The register representing O, which will contain the
             solution to the function.
         a (int): The base of the power term
         b (int): The modulus
     """
 
-    circuit.append(cirq.X(output[len(output) - 1]))  # Output = |0...01>
+    program += X(output[len(output) - 1])  # Output = |0...01>
 
     # Essentially, this works by converting modular exponentiation into a bunch of modular
 	# multiplications. It will take n multiplications (where n is the length of the input
@@ -174,10 +180,11 @@ def modular_exponentiation(circuit, input, output, a, b):
         power_of_two = input_size - 1 - i       # n-i-1
         power_of_guess = 2 ** power_of_two      # 2^(n-i-1)
         constant = pow(a, power_of_guess, b)    # c = A^(2^(n-i-1)) mod B
-        shor_math.controlled_modular_multiply(circuit, input[i], constant, b, output)   # |O> = |O> * c mod B
+        shor_math.controlled_modular_multiply(ancilla_cache, program,
+                                              input[i], constant, b, output)   # |O> = |O> * c mod B
 
 
-def shor_quantum_subroutine(guess, number_to_factor):
+def shor_quantum_subroutine(ancilla_cache, guess, number_to_factor):
     """
     Runs the quantum subroutine of Shor's algorithm. This will find a value called X', where
 	X' is the nearest integer for any value of N * i / P where N = 2^(2b), b = the number of
@@ -188,6 +195,9 @@ def shor_quantum_subroutine(guess, number_to_factor):
 	just be pushing it.
 
     Parameters:
+        ancilla_cache (dict[string, QubitPlaceholder]): A collection of ancilla qubits
+            that have been allocated in the program for use, paired with a name to help
+            determine when they're free for use.
         guess (int): The random number that was guessed as a factor of number_to_factor. This
             will be used as the base of the power term in the modular exponentiation function.
         number_to_factor (int): The number being factored by the algorithm. This will be used
@@ -202,24 +212,25 @@ def shor_quantum_subroutine(guess, number_to_factor):
     output_size = math.ceil(math.log(number_to_factor + 1, 2))
     input_size = output_size * 2
 
-    # Construct the circuit and registers
-    input = cirq.NamedQubit.range(input_size, prefix="input")
-    output = cirq.NamedQubit.range(output_size, prefix="output")
-    circuit = cirq.Circuit()
+    # Construct the program and registers
+    input = QubitPlaceholder.register(input_size)
+    output = QubitPlaceholder.register(output_size)
+    program = Program()
 
-    circuit.append(cirq.H.on_each(*input))    # Input = |+...+>, so all possible states at once
+    for qubit in input:
+        program += H(qubit)     # Input = |+...+>, so all possible states at once
 
     # Run the quantum modular exponentiation function,
 	# |output> = guess ^ |input> mod number_to_factor.
 	# This will entangle input and output so that for each state of input,
 	# output will correspond to the solution to the equation.
-    modular_exponentiation(circuit, input, output, guess, number_to_factor)
+    modular_exponentiation(ancilla_cache, program, input, output, guess, number_to_factor)
 
     # Since guess and number_to_factor are coprime, the modular exponentiation function
 	# with them is going to be periodic. By encoding all possible input and output
 	# values into these two entangled registers, we can use QFT to measure the period...
 	# sort of. I'll explain below.
-    qft.iqft(circuit, input)
+    program += qft.qft(input).dagger()
 
 	# Ok, so really what we'll end up measuring is an approximation of a fraction that
 	# has the period P on the denominator, and N * i on the numerator (where N = the number
@@ -250,14 +261,21 @@ def shor_quantum_subroutine(guess, number_to_factor):
 	# in the next step.
 
     # Measure the result from QFT
-    circuit.append(cirq.measure(*input, key="result"))
+    measurement = program.declare("ro", "BIT", input_size)
+    for i in range(0, input_size):
+        program += MEASURE(input[i], measurement[i])
 
-    # Run the circuit
-    simulator = cirq.Simulator()
-    result = simulator.run(circuit, repetitions=1)
-    result_states = result.histogram(key="result")
-    for(state, count) in result_states.items():
-        return (state, 2 ** (input_size))
+    # Run the program
+    assigned_program = address_qubits(program)
+    computer = get_qc(f"{len(assigned_program.get_qubits())}q-qvm", as_qvm=True)
+    computer.compiler.client.rpc_timeout = None
+    executable = computer.compile(assigned_program)
+    results = computer.run(executable)
+    for result in results:
+        result_string = ""
+        for bit in result:
+            result_string += str(bit)
+        return (int(result_string, 2), 2 ** input_size)
     
     
 def find_period_of_modular_exponentiation(number_to_factor, guess):
@@ -303,10 +321,11 @@ def find_period_of_modular_exponentiation(number_to_factor, guess):
 	# start of a new cycle, thus there are P terms in the cycle. So for this algorithm, we want to find the
 	# smallest number X where Guess^X mod P == 1.
 
+    ancilla_cache = {}
     while remainder != 1:
         # Run the quantum subroutine to get a value, X', which is best described if you read the comments for
         # the ShorQuantumSubroutine function.
-        (approximate_multiple_of_period_reciprocal, number_of_states) = shor_quantum_subroutine(guess, number_to_factor)
+        (approximate_multiple_of_period_reciprocal, number_of_states) = shor_quantum_subroutine(ancilla_cache, guess, number_to_factor)
         
         # Once we have this approximate number, we have to figure out what number it was trying to approximate.
         # The fraction X' / N is approximately equal to i / P, where i is some number between 0 and P, and P is
