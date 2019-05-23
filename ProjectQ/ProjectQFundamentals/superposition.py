@@ -16,7 +16,7 @@
 
 
 import unittest
-from projectq import MainEngine  # import the main compiler engine
+from projectq import MainEngine
 from projectq.ops import *
 import math
 
@@ -66,7 +66,6 @@ class SuperpositionTests(unittest.TestCase):
 
         # Run the test N times.
         for i in range(0, iterations):
-            
             # Run the test function, which will put the qubits into the desired state
             test_function(qubits)
 

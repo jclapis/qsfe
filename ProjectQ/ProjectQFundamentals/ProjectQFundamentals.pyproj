@@ -5,8 +5,7 @@
     <ProjectGuid>533d88ae-9f1b-4a53-8800-bdd21abb4595</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>superposition.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <SearchPath>..\..\ProjectQ</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ProjectQFundamentals</Name>
@@ -22,6 +21,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="entanglement.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="superposition.py" />
   </ItemGroup>
   <ItemGroup>
