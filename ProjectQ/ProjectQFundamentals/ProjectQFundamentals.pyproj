@@ -24,6 +24,9 @@
     <Compile Include="entanglement.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="superdense_coding.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="superposition.py" />
     <Compile Include="teleportation.py">
       <SubType>Code</SubType>

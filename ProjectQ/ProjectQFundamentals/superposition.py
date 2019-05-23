@@ -223,7 +223,7 @@ class SuperpositionTests(unittest.TestCase):
 
     def test_arbitrary_rotation(self):
         """
-        This tests arbitrary rotations around the Y axis (so the X-Z plane) to make sure Cirq
+        This tests arbitrary rotations around the Y axis (so the X-Z plane) to make sure ProjectQ
         can deal with any given superposition.
         """
         
