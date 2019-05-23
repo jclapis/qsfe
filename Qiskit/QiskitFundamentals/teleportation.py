@@ -197,7 +197,7 @@ class TeleportationTests(unittest.TestCase):
 
     def prepare_plus_state(self, qubit, adjoint):
         """
-        Constructs a circuit that prepares the qubit in the |+> state (|0> + |1>).
+        Constructs a circuit that prepares the qubit in the |+> state 1/√2((|0> + |1>).
 
         Parameters:
             qubit (QuantumRegister): The qubit to prepare
@@ -215,7 +215,7 @@ class TeleportationTests(unittest.TestCase):
 
     def prepare_minus_state(self, qubit, adjoint):
         """
-        Constructs a circuit that prepares the qubit in the |-> state (|0> - |1>).
+        Constructs a circuit that prepares the qubit in the |-> state 1/√2((|0> - |1>).
 
         Parameters:
             qubit (QuantumRegister): The qubit to prepare
@@ -239,7 +239,7 @@ class TeleportationTests(unittest.TestCase):
 
     def prepare_i_plus_state(self, qubit, adjoint):
         """
-        Constructs a circuit that prepares the qubit in the |i+> state (|0> + i|1>).
+        Constructs a circuit that prepares the qubit in the |i+> state 1/√2((|0> + i|1>).
 
         Parameters:
             qubit (QuantumRegister): The qubit to prepare
@@ -263,7 +263,7 @@ class TeleportationTests(unittest.TestCase):
 
     def prepare_i_minus_state(self, qubit, adjoint):
         """
-        Constructs a circuit that prepares the qubit in the |i-> state (|0> - i|1>).
+        Constructs a circuit that prepares the qubit in the |i-> state 1/√2((|0> - i|1>).
 
         Parameters:
             qubit (QuantumRegister): The qubit to prepare

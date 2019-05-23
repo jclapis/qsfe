@@ -206,7 +206,7 @@ class TeleportationTests(unittest.TestCase):
 
     def prepare_plus_state(self, qubit):
         """
-        Constructs a program that prepares the qubit in the |+> state (|0> + |1>).
+        Constructs a program that prepares the qubit in the |+> state 1/√2((|0> + |1>).
 
         Parameters:
             qubit (QubitPlaceholder): The qubit to prepare
@@ -222,7 +222,7 @@ class TeleportationTests(unittest.TestCase):
 
     def prepare_minus_state(self, qubit):
         """
-        Constructs a program that prepares the qubit in the |-> state (|0> - |1>).
+        Constructs a program that prepares the qubit in the |-> state 1/√2((|0> - |1>).
 
         Parameters:
             qubit (QubitPlaceholder): The qubit to prepare
@@ -239,7 +239,7 @@ class TeleportationTests(unittest.TestCase):
 
     def prepare_i_plus_state(self, qubit):
         """
-        Constructs a program that prepares the qubit in the |i+> state (|0> + i|1>).
+        Constructs a program that prepares the qubit in the |i+> state 1/√2((|0> + i|1>).
 
         Parameters:
             qubit (QubitPlaceholder): The qubit to prepare
@@ -256,7 +256,7 @@ class TeleportationTests(unittest.TestCase):
 
     def prepare_i_minus_state(self, qubit):
         """
-        Constructs a program that prepares the qubit in the |i-> state (|0> - i|1>).
+        Constructs a program that prepares the qubit in the |i-> state 1/√2((|0> - i|1>).
 
         Parameters:
             qubit (QubitPlaceholder): The qubit to prepare
@@ -315,15 +315,14 @@ class TeleportationTests(unittest.TestCase):
             original_qubit = QubitPlaceholder()
             transfer_qubit = QubitPlaceholder()
             reproduction_qubit = QubitPlaceholder()
-
-            program = prep_function(original_qubit)
-            original_measurement = program.declare("original_measurement", "BIT", 1)
-            transfer_measurement = program.declare("transfer_measurement", "BIT", 1)
-        
+            
             # Prepare the original qubit in the desired state, and the transfer qubits that will be used to teleport it
+            program = prep_function(original_qubit)
             program += self.prepare_transfer_qubits(entanglement_state, transfer_qubit, reproduction_qubit)
 
             # Teleport the original qubit, turning the remote reproduction qubit's state into the original state 
+            original_measurement = program.declare("original_measurement", "BIT", 1)
+            transfer_measurement = program.declare("transfer_measurement", "BIT", 1)
             program += self.measure_message_parameters(original_qubit, transfer_qubit, original_measurement, transfer_measurement)
             program += self.reproduce_original(entanglement_state, original_measurement, transfer_measurement, reproduction_qubit)
 
