@@ -5,7 +5,7 @@
     <ProjectGuid>ddf20991-60a3-48aa-acd5-b4703db96bb4</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>oracle_utility.py</StartupFile>
-    <SearchPath>..\..\ProjectQ</SearchPath>
+    <SearchPath>..\..\ProjectQ;Grover</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ProjectQOracles</Name>
@@ -24,6 +24,12 @@
     <Compile Include="deutsch_jozsa.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Grover\grover.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Grover\grover_tests.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="oracles.py">
       <SubType>Code</SubType>
     </Compile>
@@ -34,6 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|ProjectQEnv" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Grover\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
