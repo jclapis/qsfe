@@ -70,9 +70,9 @@ def qft(qubits):
 		# Bloch sphere by Φ, where Φ is the angle from the +X axis on
 		# the X-Y plane.
 		# 
-		# pyQuil provides this with the PHASE and CPHASE gates. Note that
-        # this is the same as the RZ gate (just with a global phase applied
-        # which doesn't matter).
+		# In ProjectQ, we can do this with a controlled R or Rz (since
+        # they're the same thing, ignoring global phase). They also provide
+        # CRz for convenience, so that's what I use here.
         # 
         # For more info on the phase-shift gate, look at the "phase shift"
         # section of this Wiki article:
@@ -87,7 +87,6 @@ def qft(qubits):
 
             # Perform the rotation, controlled by the jth qubit on the
 			# ith qubit, with e^(2πi/2^m)
-
             CRz(y) | (qubits[j], qubits[i])
 
 
