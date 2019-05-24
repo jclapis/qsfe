@@ -27,5 +27,6 @@ def reset(qubits):
     """
 
     for qubit in qubits:
+        Measure | qubit
         if(int(qubit) == 1):
             X | qubit

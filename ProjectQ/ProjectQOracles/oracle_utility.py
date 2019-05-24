@@ -18,41 +18,36 @@
 # This file contains helper functions that make it easier to work
 # with quantum oracles.
 
-from pyquil.quilatom import QubitPlaceholder
-from pyquil.gates import *
+from projectq import MainEngine
+from projectq.ops import *
+from projectq.meta import Dagger, Control
 
 
-def run_flip_marker_as_phase_marker(program, ancilla_cache, oracle, qubits, oracle_args):
+def run_flip_marker_as_phase_marker(oracle, qubits, oracle_args):
     """
     Runs an oracle, flipping the phase of the input array if the result was |1>
     instead of flipping the target qubit.
 
     Parameters:
-        program (Program): The program being constructed
-        ancilla_cache (dict[string, QubitPlaceholder]): A collection of ancilla qubits
-            that have been allocated in the program for use, paired with a name to help
-            determine when they're free for use.
         oracle (function): The oracle to run
-        qubits (list[QubitPlaceholder]): The register to run the oracle on
+        qubits (QuantumRegister): The register to run the oracle on
         oracle_args (anything): An oracle-specific argument object to pass to
             the oracle during execution
     """
 
-    # Add the phase-flip ancilla qubit to the program if it doesn't already
-    # exist, and set it up in the |-> state
-    phase_marker_target = None
-    if not "phase_marker_target" in ancilla_cache:
-        phase_marker_target = QubitPlaceholder()
-        ancilla_cache["phase_marker_target"] = phase_marker_target
-        program += X(phase_marker_target)
-        program += H(phase_marker_target)
-    else:
-        phase_marker_target = ancilla_cache["phase_marker_target"]
+    # Allocate an ancilla qubit to act as the oracle's target
+    phase_marker_target = qubits.engine.allocate_qubit()
+    X | phase_marker_target
+    H | phase_marker_target
 
     # Run the oracle with the phase-flip ancilla as the target - when the
     # oracle flips this target, it will actually flip the phase of the input
     # instead of entangling it with the target.
     if oracle_args is None:
-        oracle(program, qubits, phase_marker_target)
+        oracle(qubits, phase_marker_target)
     else:
-        oracle(program, qubits, phase_marker_target, oracle_args)
+        oracle(qubits, phase_marker_target, oracle_args)
+
+    # Note: the qubit needs to be in the |0> or |1> state before letting it go
+    Measure | phase_marker_target
+    del phase_marker_target
