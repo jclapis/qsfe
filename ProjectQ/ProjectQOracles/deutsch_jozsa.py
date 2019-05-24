@@ -77,10 +77,14 @@ class DeutschJozsa(unittest.TestCase):
         # Note that because we can run classical code in-between quantum instructions
         # in ProjectQ, we don't actually need to measure every qubit - we can evaluate
         # each qubit one-by-one, and as soon as one of them is 0, we can immediately
-        # return since we know the function is balanced.
+        # return since we know the function is balanced. However, the simulator will
+        # complain about leaving qubits in superpositions alive at the time of
+        # deallocation, so it's good to clean them up via measurement anyway.
         for qubit in qubits:
             H | qubit
             Measure | qubit
+
+        for qubit in qubits:
             if int(qubit) == 1:
                 return False
 

@@ -78,10 +78,10 @@
 # many of these tests.
 
 
-from pyquil import Program, get_qc
-from pyquil.quil import address_qubits
-from pyquil.quilatom import QubitPlaceholder
-from pyquil.gates import *
+from projectq import MainEngine
+from projectq.ops import *
+from projectq.meta import Dagger, Control
+from utility import reset
 import q_math
     
 
@@ -97,8 +97,8 @@ def simon_quantum_step(function, input_size):
 
     Parameters:
         function (function): The black-box function to run the algorithm on (the function being
-	        evaluated). It should take a Program as its first input, an input list[QubitPlaceholder]
-            as its second argument, and an output list[QubitPlaceholder] as its third argument.
+	        evaluated). It should take a Program as its first input, an input Qureg
+            as its second argument, and an output Qureg as its third argument.
 
         input_size (int): The number of bits that the function expects in its input and output
 	        registers.
@@ -118,17 +118,15 @@ def simon_quantum_step(function, input_size):
 	    gives an even number.
     """
 
-    # Construct the program and registers
-    input = QubitPlaceholder.register(input_size)
-    output = QubitPlaceholder.register(input_size)
-    program = Program()
+    # Construct the engine and registers
+    engine = MainEngine()
+    input = engine.allocate_qureg(input_size)
+    output = engine.allocate_qureg(input_size)
 
     # Run the function with |+...+> as the input and |0...0> as the output
-    for qubit in input:
-        program += H(qubit)
-    function(program, input, output)
-    for qubit in input:
-        program += H(qubit)
+    All(H) | input
+    function(input, output)
+    All(H) | input
 
     # At this point, the input bit string has been transformed
     # from |0...0> into X, where X is some string that is guaranteed
@@ -136,23 +134,16 @@ def simon_quantum_step(function, input_size):
     # is true is way beyond an explanation here - you have to look
     # at the literature to see why this is the case.
 
-    # Measure the resulting input register
-    measurement = program.declare("ro", "BIT", input_size)
+    # Measure the resulting input register and return it as a list[bool] for
+    # classical postprocessing
+    measurement = [False] * input_size
     for i in range(0, input_size):
-        program += MEASURE(input[i], measurement[i])
+        Measure | input[i]
+        measurement[i] = (int(input[i]) == 1)
 
-    # Run the program
-    assigned_program = address_qubits(program)
-    computer = get_qc(f"{input_size * 2}q-qvm", as_qvm=True)
-    executable = computer.compile(assigned_program)
-    results = computer.run(executable)
-
-    # Return the measurement as a list[bool] for classical postprocessing
-    for result in results:
-        measurement = [False] * input_size
-        for i in range(0, input_size):
-            measurement[i] = (result[i] == 1)
-        return measurement
+    reset(output)       # This isn't strictly necessary, but the simulator will complain
+    engine.flush()      # about deleting qubits that are still in a superposition even
+    return measurement  # though the program is finished.
 
 
 def run_function_in_classical_mode(function, input):
@@ -164,8 +155,8 @@ def run_function_in_classical_mode(function, input):
 
     Parameters:
         function (function): The black-box function to run the algorithm on (the function being
-	        evaluated). It should take a Program as its first input, an input list[QubitPlaceholder]
-            as its second argument, and an output list[QubitPlaceholder] as its third argument.
+	        evaluated). It should take a Program as its first input, an input Qureg
+            as its second argument, and an output Qureg as its third argument.
 
         input (list[bool]): The bit string you want to provide as input to the function
 
@@ -173,35 +164,29 @@ def run_function_in_classical_mode(function, input):
         A bit string representing the measured result of the function.
     """
     
-    # Construct the program and registers
+    # Construct the engine and registers
     input_size = len(input)
-    input_register = QubitPlaceholder.register(input_size)
-    output = QubitPlaceholder.register(input_size)
-    program = Program()
+    engine = MainEngine()
+    input_register = engine.allocate_qureg(input_size)
+    output = engine.allocate_qureg(input_size)
 
     # Sets up the input register so it has the requested input state,
 	# and runs the function on it.
     for i in range(0, input_size):
         if input[i]:
-            program += X(input_register[i])
-    function(program, input_register, output)
-
-    measurement = program.declare("ro", "BIT", input_size)
-    for i in range(0, input_size):
-        program += MEASURE(output[i], measurement[i])
-
-    # Run the program
-    assigned_program = address_qubits(program)
-    computer = get_qc(f"{input_size * 2}q-qvm", as_qvm=True)
-    executable = computer.compile(assigned_program)
-    results = computer.run(executable)
+            X | input_register[i]
+    function(input_register, output)
     
-    # Return the measurement as a list[bool] for classical postprocessing
-    for result in results:
-        measurement = [False] * input_size
-        for i in range(0, input_size):
-            measurement[i] = (result[i] == 1)
-        return measurement
+    # Measure the resulting input register and return it as a list[bool] for
+    # classical postprocessing
+    measurement = [False] * input_size
+    for i in range(0, input_size):
+        Measure | output[i]
+        measurement[i] = (int(output[i]) == 1)
+        
+    reset(output)       # This isn't strictly necessary, but the simulator will complain
+    engine.flush()      # about deleting qubits that are still in a superposition even
+    return measurement  # though the program is finished.
 
     
 # ====================
@@ -209,77 +194,74 @@ def run_function_in_classical_mode(function, input):
 # ====================
 
 
-def wiki_test_function(program, input, output):
+def wiki_test_function(input, output):
     """
     This is a reverse-engineered implementation of the example function
 	provided on the Wiki article for Simon's problem:
 	https://en.wikipedia.org/wiki/Simon's_problem#Example
 
     Parameters:
-        program (Program): The program being constructed
-        input (list[QubitPlaceholder]): The register that contains the input.
+        input (Qureg): The register that contains the input.
             This can be in any arbitrary state.
-        output (list[QubitPlaceholder]): The register that will hold the function output.
+        output (Qureg): The register that will hold the function output.
             This must be in the state |0...0>.
     """
 
     # Prepare the first answer qubit
-    program += X(input[0])
+    X | input[0]
     for i in range(0, 3):
-        program += CNOT(input[i], output[0])
-    program += X(input[0])
+        CNOT | (input[i], output[0])
+    X | input[0]
 
     # Prepare the second answer qubit
-    program += CNOT(input[2], output[1])
+    CNOT | (input[2], output[1])
 
      # Prepare the third answer qubit
-    program += X(output[1])
-    program += CCNOT(output[0], output[1], output[2])
-    program += X(output[1])
+    X | output[1]
+    with Control(input.engine, [output[0], output[1]]): # Note: ProjectQ doesn't have CCNOT
+        X | output[2]
+    X | output[1]
 
 
-def identity(program, input, output):
+def identity(input, output):
     """
     This is basically the identity matrix, CNOT'ing each element of the
 	input with the corresponding index of the output array.
 
     Parameters:
-        program (Program): The program being constructed
-        input (list[QubitPlaceholder]): The register that contains the input.
+        input (Qureg): The register that contains the input.
             This can be in any arbitrary state.
-        output (list[QubitPlaceholder]): The register that will hold the function output.
+        output (Qureg): The register that will hold the function output.
             This must be in the state |0...0>.
     """
     
     for i in range(0, len(input)):
-        program += CNOT(input[i], output[i])
+        CNOT | (input[i], output[i])
 
 
-def left_shift_by_1(program, input, output):
+def left_shift_by_1(input, output):
     """
     Left shifts the input register by 1 bit.
 
     Parameters:
-        program (Program): The program being constructed
-        input (list[QubitPlaceholder]): The register that contains the input.
+        input (Qureg): The register that contains the input.
             This can be in any arbitrary state.
-        output (list[QubitPlaceholder]): The register that will hold the function output.
+        output (Qureg): The register that will hold the function output.
             This must be in the state |0...0>.
     """
 
-    q_math.left_shift(program, input, output, 1)
+    q_math.left_shift(input, output, 1)
 
 
-def right_shift_by_1(program, input, output):
+def right_shift_by_1(input, output):
     """
     Right shifts the input register by 1 bit.
 
     Parameters:
-        program (Program): The program being constructed
-        input (list[QubitPlaceholder]): The register that contains the input.
+        input (Qureg): The register that contains the input.
             This can be in any arbitrary state.
-        output (list[QubitPlaceholder]): The register that will hold the function output.
+        output (Qureg): The register that will hold the function output.
             This must be in the state |0...0>.
     """
 
-    q_math.right_shift(program, input, output, 1)
+    q_math.right_shift(input, output, 1)

@@ -5,7 +5,7 @@
     <ProjectGuid>ddf20991-60a3-48aa-acd5-b4703db96bb4</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>oracle_utility.py</StartupFile>
-    <SearchPath>..\..\ProjectQ;Grover</SearchPath>
+    <SearchPath>..\..\ProjectQ;Grover;Simon</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ProjectQOracles</Name>
@@ -37,12 +37,22 @@
     <Compile Include="q_math.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Simon\matrix_math.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Simon\simon.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Simon\simon_tests.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|ProjectQEnv" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Grover\" />
+    <Folder Include="Simon\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
