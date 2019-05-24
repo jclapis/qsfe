@@ -25,6 +25,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ecc_test_implementation.py" />
+    <Compile Include="shor_code.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SteaneCode.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|ProjectQEnv" />
