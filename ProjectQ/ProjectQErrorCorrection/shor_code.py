@@ -59,13 +59,12 @@ class ShorCode(unittest.TestCase):
             CNOT | (qubits[i], qubits[i + 2])
 
 
-    def detect_bit_flip_error(self, block, engine):
+    def detect_bit_flip_error(self, block):
         """
         Detects which qubit (if any) in the given block was flipped.
 
         Parameters:
             block (list[Qureg]): The block of 3 qubits to check for bit flips
-            engine (Engine): The engine that's running the program
             
         Returns:
             A tuple containing the syndrome measurement parity values of the first and second
@@ -76,7 +75,7 @@ class ShorCode(unittest.TestCase):
             this parity measurement is doing and how it works, check that code first.
         """
         
-        parity_qubits = engine.allocate_qureg(2)
+        parity_qubits = block[0].engine.allocate_qureg(2)
 
         # Check if q0 and q1 have the same value
         CNOT | (block[0], parity_qubits[0])
@@ -179,17 +178,17 @@ class ShorCode(unittest.TestCase):
         # Correct bit flips on the first block - look at the 3-qubit Bit Flip code for an
         # explanation of how the classical register's output maps to the qubit to flip.
         block_0 = [qubits[0], qubits[1], qubits[2]]
-        parity_measurements = self.detect_bit_flip_error(block_0, qubits.engine)
+        parity_measurements = self.detect_bit_flip_error(block_0)
         self.correct_error(block_0, parity_measurements, "bit", X)
 
         # Correct bit flips on the second block
         block_1 = [qubits[3], qubits[4], qubits[5]]
-        parity_measurements = self.detect_bit_flip_error(block_1, qubits.engine)
+        parity_measurements = self.detect_bit_flip_error(block_1)
         self.correct_error(block_1, parity_measurements, "bit", X)
 
         # Correct bit flips on the third block
         block_2 = [qubits[6], qubits[7], qubits[8]]
-        parity_measurements = self.detect_bit_flip_error(block_2, qubits.engine)
+        parity_measurements = self.detect_bit_flip_error(block_2)
         self.correct_error(block_2, parity_measurements, "bit", X)
 
         # Correct any phase flips. Flipping any qubit in the broken block will end up putting
