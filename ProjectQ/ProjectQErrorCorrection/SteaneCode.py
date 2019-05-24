@@ -113,7 +113,7 @@ class SteaneCode(unittest.TestCase):
         Detects which physical qubit (if any) had its phase flipped.
 
         Parameters:
-            qubits (list[QubitPlaceholder]): The logical error-encoded qubit
+            qubits (Qureg): The logical error-encoded qubit
 
         Returns:
             An array of syndrome measurement results.
@@ -181,8 +181,8 @@ class SteaneCode(unittest.TestCase):
 		# 110 = Error on qubit 5
 		# 111 = Error on qubit 6
 		# -----------------------
-        # In pyQuil, we can do this by switching on each of the 3 measurements, so we have
-        # to build branches to handle each switch.
+        # In ProjectQ, we can just convert the syndrome measurement to an int and flip the
+        # specified qubit. Nice and easy.
 
         # Convert the measurements to an int - this is basically ported from my Q# implementation
         # of Steane's code. Look how much easier this is when we have classical-code-in-the-middle
