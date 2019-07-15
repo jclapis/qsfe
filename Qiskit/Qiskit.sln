@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		vs_test_path_fixup.py = vs_test_path_fixup.py
 	EndProjectSection
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "QiskitDebugging", "QiskitDebugging\QiskitDebugging.pyproj", "{72BE373C-0CF7-4786-BC38-1F97A33D131B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,8 @@ Global
 		{7C52B942-C2BA-43C7-BB62-B7AA42F061FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0EACEA7-561E-459B-A990-E92BFD89F809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C0EACEA7-561E-459B-A990-E92BFD89F809}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72BE373C-0CF7-4786-BC38-1F97A33D131B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72BE373C-0CF7-4786-BC38-1F97A33D131B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

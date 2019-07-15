@@ -14,6 +14,8 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CirqOracles", "CirqOracles\
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CirqNonOracles", "CirqNonOracles\CirqNonOracles.pyproj", "{918DF224-9554-4B84-9165-DC9472442FAC}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CirqDebugging", "CirqDebugging\CirqDebugging.pyproj", "{34929373-1986-4332-B717-AEA8942E6BAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,8 @@ Global
 		{6958F296-BDCE-4BB3-BFC9-F08879E58B62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{918DF224-9554-4B84-9165-DC9472442FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{918DF224-9554-4B84-9165-DC9472442FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34929373-1986-4332-B717-AEA8942E6BAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34929373-1986-4332-B717-AEA8942E6BAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

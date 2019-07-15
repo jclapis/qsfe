@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.329
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QSharpErrorCorrection", "QSharpErrorCorrection\QSharpErrorCorrection.csproj", "{DDA504D2-84DA-45AE-AED3-14ACFE6311DB}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QSharpOracles", "QSharpOracles\QSharpOracles.csproj", "{DC8237B0-182F-4868-8338-79F66B234A6C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QSharpNonOracles", "QSharpNonOracles\QSharpNonOracles.csproj", "{72D529D9-AAE7-4C0B-82C6-82E3B2B0BDEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QSharpDebugging", "QSharpDebugging\QSharpDebugging.csproj", "{AC7DE9BB-B91E-4331-9E75-E8563A42D2E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{72D529D9-AAE7-4C0B-82C6-82E3B2B0BDEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72D529D9-AAE7-4C0B-82C6-82E3B2B0BDEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72D529D9-AAE7-4C0B-82C6-82E3B2B0BDEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC7DE9BB-B91E-4331-9E75-E8563A42D2E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC7DE9BB-B91E-4331-9E75-E8563A42D2E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC7DE9BB-B91E-4331-9E75-E8563A42D2E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC7DE9BB-B91E-4331-9E75-E8563A42D2E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
