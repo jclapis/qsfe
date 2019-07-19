@@ -28,7 +28,7 @@
     <Compile Include="shor_code.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SteaneCode.py">
+    <Compile Include="steane_code.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
