@@ -111,7 +111,7 @@ class DeutschJozsa(unittest.TestCase):
         self.check_if_constant_or_balanced(circuit, oracle, register, oracle_args)
         
         # Run the circuit.
-        simulator = Aer.get_backend('qasm_simulator')
+        simulator = Aer.get_backend('aer_simulator')
         simulation = execute(circuit, simulator, shots=1)
         result = simulation.result()
         counts = result.get_counts(circuit)

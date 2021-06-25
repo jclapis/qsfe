@@ -138,7 +138,7 @@ def simon_quantum_step(function, input_size):
     circuit.measure(input, measurement)
 
     # Run the circuit
-    simulator = Aer.get_backend("qasm_simulator")
+    simulator = Aer.get_backend("aer_simulator")
     simulation = execute(circuit, simulator, shots=1)
     result = simulation.result()
     counts = result.get_counts(circuit)
@@ -187,7 +187,7 @@ def run_function_in_classical_mode(function, input):
     circuit.measure(output, measurement)
 
     # Run the circuit
-    simulator = Aer.get_backend("qasm_simulator")
+    simulator = Aer.get_backend("aer_simulator")
     simulation = execute(circuit, simulator, shots=1)
     result = simulation.result()
     counts = result.get_counts(circuit)

@@ -89,7 +89,7 @@ def qft(circuit, qubits):
 
             # Perform the rotation, controlled by the jth qubit on the
 			# ith qubit, with e^(2πi/2^m)
-            circuit.cu3(0, 0, y, qubits[j], qubits[i])
+            circuit.cu(0, 0, y, 0, qubits[j], qubits[i])
 
 
     # The bit order is going to be backwards after the QFT so this just
@@ -117,5 +117,5 @@ def iqft(circuit, qubits):
         for j in range(register_length - 1, i, -1):
             m = j - i + 1
             y = 2 * math.pi / 2 ** m
-            circuit.cu3(0, 0, -y, qubits[j], qubits[i])
+            circuit.cu(0, 0, -y, 0, qubits[j], qubits[i])
         circuit.h(qubits[i])

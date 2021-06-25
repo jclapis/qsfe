@@ -255,7 +255,7 @@ def shor_quantum_subroutine(guess, number_to_factor):
     circuit.measure(input, measurement)
 
     # Run the circuit
-    simulator = Aer.get_backend("qasm_simulator")
+    simulator = Aer.get_backend("aer_simulator")
     simulation = execute(circuit, simulator, shots=1)
     result = simulation.result()
     counts = result.get_counts(circuit)

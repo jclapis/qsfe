@@ -105,7 +105,7 @@ def run_grover_search(number_of_qubits, oracle, oracle_args):
     circuit.measure(qubits, measurement)
 
     # Run the circuit.
-    simulator = Aer.get_backend("qasm_simulator")
+    simulator = Aer.get_backend("aer_simulator")
     simulation = execute(circuit, simulator, shots=1)
     result = simulation.result()
     counts = result.get_counts(circuit)

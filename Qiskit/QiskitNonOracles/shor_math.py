@@ -224,7 +224,7 @@ def integer_increment_phase(circuit, increment, target):
     d = len(target)
     for i in range(0, d):
         y = math.pi * increment / (2 ** (d - 1 - i))
-        circuit.u3(0, 0, y, target[i])
+        circuit.u(0, 0, y, target[i])
 
 
 def adjoint_integer_increment_phase(circuit, increment, target):
@@ -235,7 +235,7 @@ def adjoint_integer_increment_phase(circuit, increment, target):
     d = len(target)
     for i in range(d - 1, -1, -1):
         y = math.pi * increment / (2 ** (d - 1 - i))
-        circuit.u3(0, 0, -y, target[i])
+        circuit.u(0, 0, -y, target[i])
 
 
 def controlled_integer_increment_phase(circuit, control_list, increment, target):
@@ -253,7 +253,7 @@ def controlled_integer_increment_phase(circuit, control_list, increment, target)
     d = len(target)
     for i in range(0, d):
         y = math.pi * increment / (2 ** (d - 1 - i))
-        circuit.cu3(0, 0, y, control, target[i])
+        circuit.cu(0, 0, y, 0, control, target[i])
 
     if len(control_list) == 2:
         circuit.ccx(control_list[0], control_list[1], control[0])
@@ -274,7 +274,7 @@ def controlled_adjoint_integer_increment_phase(circuit, control_list, increment,
     d = len(target)
     for i in range(d - 1, -1, -1):
         y = math.pi * increment / (2 ** (d - 1 - i))
-        circuit.cu3(0, 0, -y, control, target[i])
+        circuit.cu(0, 0, -y, 0, control, target[i])
 
     if len(control_list) == 2:
         circuit.ccx(control_list[0], control_list[1], control[0])
